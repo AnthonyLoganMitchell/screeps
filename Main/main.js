@@ -14,7 +14,4 @@ module.exports.loop = function () {
      //console.log(Game.rooms[name].memory.roomSpawn);
     }
 
-
-
-
 } //end of main loop

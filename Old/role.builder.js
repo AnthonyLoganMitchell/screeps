@@ -1,16 +1,18 @@
+var roleBuilder = {
 
-Room.prototype.runBuilder= function(creep) {
+    /** @param {Creep} creep **/
+    run: function(creep) {
         var withdraw_target = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_CONTAINER)&& structure.store[RESOURCE_ENERGY] >= 1/2*structure.storeCapacity;
-
+                        return (structure.structureType == STRUCTURE_STORAGE || structure.structureType == STRUCTURE_CONTAINER)&& structure.store[RESOURCE_ENERGY] >= 1/2*structure.storeCapacity;
+                                
                     }
             });
-
+           
         var idleFlag = creep.room.find(FIND_FLAGS,{filter:(i)=>{return(i.name=='IdleFlag1');}});
-
+        
         var deposit_target = creep.room.find(FIND_STRUCTURES,{filter:(i)=>{return(i.structureType==STRUCTURE_CONTAINER)&&i.store[RESOURCE_ENERGY]<i.storeCapacity;}});
-        var build_target = creep.room.find(FIND_CONSTRUCTION_SITES);
+        var build_target = creep.room.find(FIND_CONSTRUCTION_SITES);    
         var spawn = creep.room.find(FIND_STRUCTURES,{filter:(i)=>{return(i.structureType==STRUCTURE_SPAWN);}});
 	    if(creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
@@ -23,22 +25,22 @@ Room.prototype.runBuilder= function(creep) {
 
 
 	    if(creep.memory.building) {
-
-
+	        
+	       
             if(build_target.length>0) {
-
+                
                 if(creep.build(build_target[0]) == ERR_NOT_IN_RANGE && creep.carry.energy != 0) {
-                   creep.moveTo(build_target[0], {visualizePathStyle: {stroke: '#ffffff'}});
+                   creep.moveTo(build_target[0], {visualizePathStyle: {stroke: '#ffffff'}}); 
                    }
-
+           
             }
-
+            
             if(build_target.length==0 && creep.carry.energy >0){
                 if(creep.transfer(deposit_target[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
-                  creep.moveTo(deposit_target[0]);
+                  creep.moveTo(deposit_target[0]);  
                 }
             }
-
+            
 	    }
 	    else{
 	           if(build_target.length>0 && creep.withdraw(withdraw_target[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
@@ -49,16 +51,16 @@ Room.prototype.runBuilder= function(creep) {
                         creep.moveTo(deposit_target[0]);
                         }
                     }else{
-                    creep.moveTo(idleFlag[0]);
+                    creep.moveTo(idleFlag[0]);    
                     }
                 }
-
-
+            
+	         
             }
     }
+};
 
-
-
+module.exports = roleBuilder;
 
 
 
@@ -77,3 +79,4 @@ Room.prototype.runBuilder= function(creep) {
 	           }
 	       }
 	   } */
+         
