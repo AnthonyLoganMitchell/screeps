@@ -27,7 +27,7 @@ Room.prototype.setRoomState = function() {
   //container exists
   if (containers != undefined) {
     //storage exists
-    if (this.memory.roomStorage != undefined) {
+    if (this.memory.roomStorageID != undefined) {
       //stage 3 room, advanced
       this.memory.roomState = "ROOM_STATE_ADVANCED";
     } else {
@@ -41,137 +41,220 @@ Room.prototype.setRoomState = function() {
 
 
 }
-/////////////////////////////////////////////////////////////////////////////
 
+
+Room.prototype.setRoomCreeps = function() {
+///////////////////////////////////////////////////////////////
+	this.memory.enemyCreeps = [];															///
+  this.memory.myCreepsInRoom = [];													///
+  var enemyCreeps = this.find(FIND_HOSTILE_CREEPS); 				///
+  if (enemyCreeps != undefined) { 													///
+    for (let i = 0; i < enemyCreeps.length; i++) { 					///
+      this.memory.enemyCreeps.push(enemyCreeps[i].id); 			///
+    } 																											///
+  } 																												///
+  //creep in room																						///
+  var myCreepsInRoom = this.find(FIND_MY_CREEPS); 					///
+  if (myCreepsInRoom != undefined) { 												///
+    for (let i = 0; i < myCreepsInRoom.length; i++) { 			///
+      this.memory.myCreepsInRoom.push(myCreepsInRoom[i].id) ///
+    }																												///
+  }																													///
+}																														///
+///////////////////////////////////////////////////////////////
 Room.prototype.setRoomObjects = function() {
-  //containers, constructionSites, towers, ramparts, walls, spawns, extensions, terminals, creeps, sources, roads
+  //containers,extensions, constructionSites, towers, ramparts, walls, spawns, extensions, terminals, creeps, sources, roads
 
   var controllerLevel = this.controller.level;
 
-  var enemyCreeps = this.find(FIND_HOSTILE_CREEPS);
-  if (enemyCreeps != undefined) {
-    this.memory.enemyCreeps = enemyCreeps;
-  }
-  //creep in room
-  var myCreepsInRoom = this.find(FIND_MY_CREEPS);
-  if (myCreepsInRoom != undefined) {
-    this.memory.myCreepsInRoom = myCreepsInRoom;
-  }
+  //DONE////////////////////////////////////////////////// ROADS
+  this.memory.roomRoads = [];
   var roomRoads = this.find(FIND_STRUCTURES, {
     filter: (i) => {
       return (i.structureType == STRUCTURE_ROAD);
     }
   });
   if (roomRoads != undefined) {
-    this.memory.roomRoads = roomRoads;
+    for (let i = 0; i < roomRoads.length; i++) {
+      this.memory.roomRoads.push(roomRoads[i].id);
+    }
   }
+  //DONE////////////////////////////////////////////////////ROADS_END
+
+  //DONE/////////////////////////////////////////////////////////// CONSTRUCTIONSITES
+  this.memory.roomConstructSitesIDs = [];
   var roomConstructSites = this.find(FIND_CONSTRUCTION_SITES);
-
   if (roomConstructSites != undefined) {
-    this.memory.roomConstructSites = roomConstructSites;
+    for (let i = 0; i < roomConstructSites.length; i++) {
+      this.memory.roomConstructSitesIDs.push(roomConstructSites[i].id);
+    }
   }
+  //DONE/////////////////////////////////////////////////////// CONSTRUCTIONSITES_END
 
+  //DONE//////////////////////////////////////////////////////// SPAWN
+  this.memory.roomSpawnIDs = [];
   var roomSpawn = this.find(FIND_MY_SPAWNS);
   if (roomSpawn != undefined) {
-    this.memory.roomSpawn = roomSpawn;
+    this.memory.roomSpawnIDs.push(roomSpawn[0].id);
   }
+  //DONE/////////////////////////////////////////////////////// SPAWN_END
 
 
-  if (controllerLevel > 1) {
-
+  if (controllerLevel > 1) { // Level 2 or higher controller
+    //DONE////////////////////////////////////////////////////////////CONTAINERS
+    this.memory.roomContainersIDs = [];
     var roomContainers = this.find(FIND_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_CONTAINER);
       }
     });
     if (roomContainers != undefined) {
-      this.memory.roomContainers = roomContainers;
+      for (let i = 0; i < roomContainers.length; i++) {
+        this.memory.roomContainersIDs.push(roomContainers[i].id);
+      }
     }
+    //DONE///////////////////////////////////////////////////////////CONTAINERS_END
+
+    //DONE///////////////////////////////////////////////////////////RAMPARTS
+    this.memory.roomRampartsIDs = [];
+    this.memory.roomRamparts = [];
     var roomRamparts = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_RAMPART);
       }
     });
     if (roomRamparts != undefined) {
-      this.memory.roomRamparts = roomRamparts;
+      for (let i = 0; i < roomRamparts.length; i++) {
+        this.memory.roomRampartsIDs.push(roomRamparts[i].id);
+      }
     }
+    //DONE///////////////////////////////////////////////////////////RAMPARTS_END
+
+    //DONE///////////////////////////////////////////////////////////WALLS
+    this.memory.roomWallsIDs = [];
+    this.memory.roomWalls = [];
     var roomWalls = this.find(FIND_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_WALL);
       }
     });
     if (roomWalls != undefined) {
-      this.memory.roomWalls = roomWalls;
+      for (let i = 0; i < roomWalls.length; i++) {
+        this.memory.roomWallsIDs.push(roomWalls[i].id);
+      }
     }
+    //DONE///////////////////////////////////////////////////////////WALLS_END
+
+    //DONE///////////////////////////////////////////////////////////EXTENSIONS
+    this.memory.roomExtensionsIDs = [];
+    this.memory.roomExtensions = [];
     var roomExtensions = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_EXTENSION);
       }
     });
     if (roomExtensions != undefined) {
-      this.memory.roomExtensions = roomExtensions;
+      for (let i = 0; i < roomExtensions.length; i++) {
+        this.memory.roomExtensionsIDs.push(roomExtensions[i].id);
+      }
     }
+    //DONE/////////////////////////////////////////////////////////////EXTENSIONS_END
+  } // Level 2 or higher controller_end
 
-  }
-
-  if (controllerLevel > 2) { /// level 2 controller
+  if (controllerLevel > 2) { /// level 3 or higher controller
+    this.memory.roomTowersIDs = [];
+    //DONE///////////////////////////////////////////////////////TOWERS
     var roomTowers = this.find(FIND_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_TOWER);
       }
     });
     if (roomTowers != undefined) {
-      this.memory.roomTowers = roomTowers;
+      //console.log("debug: "+roomTowers)
+      for (let i = 0; i < roomTowers.length; i++) {
+        this.memory.roomTowersIDs.push(roomTowers[i].id)
+      }
     }
-  }
-
-  if (controllerLevel > 4) {
+  } // Level 3 or higher controller_end
+  //DONE////////////////////////////////////////////////////////TOWERS_END
+  if (controllerLevel > 4) { // Level 5 or higher controller
+    //DONE////////////////////////////////////////////////////////LINKS
+    this.memory.roomLinksIDs = [];
     var roomLinks = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_LINK);
       }
     });
     if (roomLinks != undefined) {
-      this.memory.roomLinks = roomLinks;
+      for (let i = 0; i < roomLinks.length; i++) {
+        this.memory.roomLinksIDs.push(roomLinks[i].id);
+      }
     }
-  }
-  if (controllerLevel > 5) {
+    //DONE//////////////////////////////////////////////////////////LINK_END
+
+		//DONE//////////////////////////////////////////////////////////STORAGE
+    var storage = this.storage.id;
+    if (storage != null) {
+      this.memory.roomStorageID = storage;
+    }
+		//DONE//////////////////////////////////////////////////////////STORAGE_END
+  } // Level 5 or higher controller_end
+  if (controllerLevel > 5) { // Level 6 or higher controller
+    //DONE//////////////////////////////////////////////////////////EXTRACTOR
+    this.memory.roomExtractorsIDs = [];
     var roomExtractors = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_EXTRACTOR);
       }
     });
     if (roomExtractors != undefined) {
-      this.memory.roomExtractors = roomExtractors;
+      for (let i = 0; i < roomExtractors.length; i++) {
+        this.memory.roomExtractorsIDs.push(roomExtractors[i].id);
+      }
     }
+    //DONE//////////////////////////////////////////////////////////EXTRACTOR_END
+
+    //DONE//////////////////////////////////////////////////////////TERMINAL
+    this.memory.roomTerminalIDs = [];
     var roomTerminal = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_TERMINAL);
       }
     });
     if (roomTerminal != undefined) {
-      this.memory.roomTerminal = roomTerminal;
+      for (let i = 0; i < roomTerminal.length; i++) {
+        this.memory.roomTerminalIDs.push(roomTerminal[i].id);
+      }
     }
+    //DONE//////////////////////////////////////////////////////////TERMINAL_END
 
+    //DONE//////////////////////////////////////////////////////////LABS
+    this.memory.roomLabsIDs = [];
     var roomLabs = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_LAB);
       }
     });
     if (roomLabs != undefined) {
-      this.memory.roomLabs = roomLabs;
+      for (let i = 0; i < roomLabs.length; i++) {
+        this.memory.roomLabsIDs.push(roomLabs[i].id);
+      }
     }
-  }
-  if (controllerLevel > 7) {
+    //DONE//////////////////////////////////////////////////////////LABS_END
+  } // Level 6 or higher controller_end
+  if (controllerLevel > 7) { // Level 8 or higher controller_end
+    this.memory.roomObserversIDs = [];
     var roomObservers = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_OBSERVER);
       }
     });
     if (roomObservers != undefined) {
-      this.memory.roomObservers = roomObservers;
+      for (let i = 0; i < roomObservers.length; i++) {
+        this.memory.roomObservers = roomObservers;
+      }
     }
-  }
+  } // Level 8 or higher controller_end
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,53 +265,74 @@ Room.prototype.executeOnTicks = function(ticks) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Room.prototype.runRoom = function() {
-  //console.log('run_room:debug');
-  this.setRoomObjects();
-  var creepsInRoom = this.memory.myCreepsInRoom;
-	//console.log(creepsInRoom);
-  var towersInRoom = this.memory.roomTowers;
-  if (this.executeOnTicks(5)) {
+
+  var towersInRoom = [];
+  var spawnsInRoom = [];
+  if (this.executeOnTicks(10)) {
+    console.log("Room_update: " + this.name)
+    this.setRoomObjects();
     this.setRoomState();
   }
+  if (this.memory.roomSpawnIDs != null || this.memory.roomSpawnIDs != "undefined") {
+    for (let i = 0; i < this.memory.roomSpawnIDs.length; i++) {
+      spawnsInRoom.push(Game.getObjectById(this.memory.roomSpawnIDs[i]));
+    }
+  }
+  if (this.memory.roomTowersIDs != null || this.memory.roomSpawnIDs != "undefined") {
+    for (let i = 0; i < this.memory.roomTowersIDs.length; i++) {
+      towersInRoom.push(Game.getObjectById(this.memory.roomTowersIDs[i]));
+    }
+  }
 
-  var temp = this.getNextCreepToSpawn();
+  for (let i = 0; i < this.memory.myCreepsInRoom.length; i++) {
+    if ((Game.getObjectById(this.memory.myCreepsInRoom[i]) == null || this.memory.myCreepsInRoom.length == 0) && !spawnsInRoom[0].spawning) {
+      this.setRoomCreeps();
+      var type = this.getNextCreepToSpawn();
+      if (type != '') {
+        this.spawnNextCreep(type);
+      }
+    }
+  }
 
-  this.spawnNextCreep(temp);
   for (var i in towersInRoom) {
-		//console.log(towersInRoom[i])
     this.runTower(towersInRoom[i]);
   }
-  for (var name in Game.creeps) { //
-		var creep = Game.creeps[name];
-    //console.log(creepsInRoom[name].memory.role);
-    if (creep.memory.role == 'harvester') { //
-      this.runHarvester(creep); //
-    } //
-    if (creep.memory.role == 'upgrader') { ///////(CREEP_RUN_LOOP)
-      this.runUpgrader(creep); //
-    } //
-    if (creep.memory.role == 'builder') { //
-      this.runBuilder(creep); //
+  for (var name in Memory.creeps) {
+    var creep = Game.creeps[name];
+    if (!Game.creeps[name]) {
+      delete Memory.creeps[name];
+      this.setRoomCreeps();
+      continue;
     }
-    if (creep.memory.role == 'repairer') {
-      this.runRepairer(creep);
+    switch (creep.memory.role) {
+      case 'harvester':
+        this.runHarvester(creep);
+        break;
+      case 'upgrader':
+        this.runUpgrader(creep);
+        break;
+      case 'builder':
+        this.runBuilder(creep);
+        break;
+      case 'repairer':
+        this.runRepairer(creep);
+        break;
+      case 'miner1':
+        this.runMiner1(creep);
+        break
+      case 'miner2':
+        this.runMiner2(creep);
+        break
+      case 'attacker':
+        this.runAttacker(creep, attack_flag);
+        break;
+      case 'ranged_attacker':
+        this.runRangedAttacker(creep, attack_flag_2);
+        break;
+      case 'scout':
+        this.runScout(creep, capture_flag);
+        break;
     }
-    if (creep.memory.role == 'miner1') {
-      this.runMiner1(creep);
-    }
-    if (creep.memory.role == 'miner2') {
-      this.runMiner2(creep);
-    }
-    if (creep.memory.role == 'attacker') {
-      this.runAttacker(creep, attack_flag);
-    }
-    if (creep.memory.role == 'ranged_attacker') {
-      this.runRangedAttacker(creep, attack_flag_2);
-    }
-    if (creep.memory.role == 'scout') {
-      this.runScout(creep, capture_flag);
-    }
-
   }
 
 }

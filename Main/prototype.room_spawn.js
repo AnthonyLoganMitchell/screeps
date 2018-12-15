@@ -1,9 +1,13 @@
 require('prototype.spawn');
 Room.prototype.getNextCreepToSpawn = function() {
   //console.log('GetNextCreepToSpawn:debug');
-  var myCreepsInRoom = this.memory.myCreepsInRoom;
+  var myCreepsInRoom =[];
+	for (let i=0; i<this.memory.myCreepsInRoom.length;i++) {
+		if (Game.getObjectById(this.memory.myCreepsInRoom[i]) != null)
+		myCreepsInRoom.push(Game.getObjectById(this.memory.myCreepsInRoom[i]))
+	}
   var myConstructionSites = this.memory.roomConstructSites;
-  var creepType;
+  var creepType= '';
   const roomState = this.memory.roomState;
   //console.log('roomState: '+roomState);
 
@@ -13,15 +17,19 @@ Room.prototype.getNextCreepToSpawn = function() {
   //get num of miners
   numMiners1 = _.sum(myCreepsInRoom, c => c.memory.role === 'miner1');
   numMiners2 = _.sum(myCreepsInRoom, c => c.memory.role === 'miner2');
-  //console.log('numMiners: '+numMiners1.toString());
-
+  console.log('numMiners1: '+numMiners1.toString());
+	console.log('numMiners2: '+numMiners2.toString());
   //get num of harvesters
   numHarvesters = _.sum(myCreepsInRoom, c => c.memory.role === 'harvester');
+	console.log('numHarvesters: '+numHarvesters.toString());
   //get num of Builders
   numBuilders = _.sum(myCreepsInRoom, c => c.memory.role === 'builder');
-  //TODO HERE!
+	console.log('numBuilders: '+numBuilders.toString());
+
   numRepairers = _.sum(myCreepsInRoom, c => c.memory.role === 'repairer');
+	console.log('numRepairers: '+numRepairers.toString());
   numUpgraders = _.sum(myCreepsInRoom, c => c.memory.role === 'upgrader');
+	console.log('numUpgraders: '+numUpgraders.toString());
 
   //get num of remote harvesters
   //numRemoteHarvesters = _.sum(creepsInRoom, c => c.memory.role === 'remoteHarvester');
@@ -236,30 +244,6 @@ Room.prototype.spawnNextCreep = function(creepType) {
         if (activeSpawn != undefined) {
           activeSpawn.createUpgrader(this.name, creepEnergyCost);
         }
-        /*  case 'remoteHarvester':
-
-              //get target rooms for the remote harvester
-              var remoteRooms = this.memory.remoteRooms;
-              var targetRoom;
-              var numAssigned = 0;
-              var remoteCreeps = _.filter(creepsInRoom, c => c.memory.role === 'remoteHarvester');
-
-              //loop through rooms
-              for(let room of remoteRooms){
-
-                 //get number of creeps assigned to the room
-                 numAssigned = _.sum(remoteCreeps, c => c.memory.targetRoom === room.name);
-
-                 //if not 2 assigned to the room, assign to the room
-                 if(numAssigned < 2){
-                     targetRoom = room.name;
-                     break;
-                 }
-              }
-
-              //spawn remoteHarvester
-              activeSpawn.createRemoteHarvester(this.name, targetRoom, creepEnergyCost);
-          break;*/
 
       default:
         //something went wrong, print error message

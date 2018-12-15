@@ -24,9 +24,7 @@ Room.prototype.runMiner1= function(creep){
         }else{/////////////////
             if(creep.transfer(main_containers ,RESOURCE_ENERGY)== ERR_NOT_IN_RANGE){
                creep.moveTo(main_containers);
-            }else{
-                creep.transfer(main_containers ,RESOURCE_ENERGY);
-            }/////////////////
+            }
         }
    }
 }
