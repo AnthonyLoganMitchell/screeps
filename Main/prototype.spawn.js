@@ -2,14 +2,14 @@ Spawn.prototype.createMiner1 = function(homeRoom, energy) {
   const rand = Game.time.toString();
   var body = [];
   if (energy <= 300) {
-    body = [WORK];
-    energy -= 100;
+    body = [MOVE];
+    energy -= 50;
   } else if (energy <= 400) {
-    body = [WORK, WORK];
-    energy -= 200;
+    body = [MOVE, WORK];
+    energy -= 150;
   } else {
-    body = [WORK, WORK, WORK];
-    energy -= 300;
+    body = [MOVE, WORK, WORK];
+    energy -= 250;
   }
 
   const maxParts = Math.floor(energy / 100);
@@ -17,7 +17,7 @@ Spawn.prototype.createMiner1 = function(homeRoom, energy) {
   //loop through and add carry and move parts the remaining allowed amount
   for (let i = 0; i < maxParts; ++i) {
     body.push(CARRY);
-    body.push(MOVE);
+    body.push(WORK);
   }
 
   //create remoteHarvester
@@ -30,17 +30,17 @@ Spawn.prototype.createMiner1 = function(homeRoom, energy) {
   });
 }
 Spawn.prototype.createMiner2 = function(homeRoom, energy) {
-  const rand = Game.time.toString();
+	const rand = Game.time.toString();
   var body = [];
   if (energy <= 300) {
-    body = [WORK];
-    energy -= 100;
+    body = [MOVE];
+    energy -= 50;
   } else if (energy <= 400) {
-    body = [WORK, WORK];
-    energy -= 200;
+    body = [MOVE, WORK];
+    energy -= 150;
   } else {
-    body = [WORK, WORK, WORK];
-    energy -= 300;
+    body = [MOVE, WORK, WORK];
+    energy -= 250;
   }
 
   const maxParts = Math.floor(energy / 100);
@@ -48,7 +48,7 @@ Spawn.prototype.createMiner2 = function(homeRoom, energy) {
   //loop through and add carry and move parts the remaining allowed amount
   for (let i = 0; i < maxParts; ++i) {
     body.push(CARRY);
-    body.push(MOVE);
+    body.push(WORK);
   }
 
   //create remoteHarvester

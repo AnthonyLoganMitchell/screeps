@@ -43,7 +43,6 @@ Room.prototype.runRoom = function() {
     if ((Game.getObjectById(this.memory.myCreepsInRoom[i]) == null || this.memory.myCreepsInRoom == null) && !spawnsInRoom[0].spawning) {
       this.setRoomCreeps();
       type = this.getNextCreepToSpawn();
-			console.log("debug"+type);
       if (type != '') {
         this.spawnNextCreep(type);
       }
