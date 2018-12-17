@@ -7,7 +7,7 @@ Room.prototype.runMiner1 = function(creep) {
   }
   if (this.memory.roomExtensionsIDs != null) {
     for (let i = 0; i < this.memory.roomExtensionsIDs.length; i++) {
-			if (Game.getObjectById(this.memory.roomExtensionsIDs[i]).energy < Game.getObjectById(this.memory.roomExtensions[i]).energyCapacity) {
+			if (Game.getObjectById(this.memory.roomExtensionsIDs[i]).energy < Game.getObjectById(this.memory.roomExtensionsIDs[i]).energyCapacity) {
 					targetsTMP.push(Game.getObjectById(this.memory.roomExtensionsIDs[i]));
 			}
     }
@@ -19,6 +19,8 @@ Room.prototype.runMiner1 = function(creep) {
 			}
 		}
 	}
+
+	//TODO: Start right here with the overhaul.
   var targets = creep.room.find(FIND_STRUCTURES, {
     filter: (structure) => {
       return (structure.structureType == STRUCTURE_EXTENSION ||
