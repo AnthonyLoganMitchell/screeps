@@ -50,7 +50,9 @@ Room.prototype.runHarvester = function(creep) {
   if (storage != null && storage.store[RESOURCE_ENERGY] > 0) {
     main_withdraw = storage;
   } else {
-    main_withdraw = creep.pos.findClosestByRange(containers);
+    main_withdraw = creep.pos.findClosestByRange(containers, {filter: (i) => {
+			return(i.store[RESOURCE_ENERGY] > 1/3*i.storeCapacity);
+		}});
   }
   var main_deposit;
   if (storage != null && storage.store[RESOURCE_ENERGY] < storage.storeCapacity) {
@@ -58,23 +60,23 @@ Room.prototype.runHarvester = function(creep) {
   } else {
     main_deposit = creep.pos.findClosestByRange(containers, {
       filter: (structure) => {
-        return (structure.energy < structure.energyCapacity);
+        return (structure.store[RESOURCE_ENERGY] < structure.energyCapacity);
       }
     });
   }
 	//console.log(main_withdraw);
   //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  if (creep.carry.energy < 1 / 2 * creep.carryCapacity && main_target != undefined) {
+  if (creep.carry.energy < 1 / 2 * creep.carryCapacity && main_target != null) {
     if (creep.withdraw(main_withdraw, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
       creep.moveTo(main_withdraw);
     }
   } else {
-    if (main_target != undefined) {
+    if (main_target != null) {
       if (creep.transfer(main_target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(main_target);
       }
-    } else if (main_target == undefined && creep.carry.energy != 0) {
+    } else if (main_target == null && creep.carry.energy != 0) {
       if (creep.transfer(main_deposit, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE && main_deposit != null) {
         creep.moveTo(main_deposit);
       } else {
