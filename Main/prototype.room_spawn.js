@@ -1,13 +1,13 @@
 require('prototype.spawn');
 Room.prototype.getNextCreepToSpawn = function() {
   //console.log('GetNextCreepToSpawn:debug');
-  var myCreepsInRoom =[];
-	for (let i=0; i<this.memory.myCreepsInRoom.length;i++) {
-		if (Game.getObjectById(this.memory.myCreepsInRoom[i]) != null)
-		myCreepsInRoom.push(Game.getObjectById(this.memory.myCreepsInRoom[i]))
-	}
-  var myConstructionSites = this.memory.roomConstructSites;
-  var creepType= '';
+  var myCreepsInRoom = [];
+  for (let i = 0; i < this.memory.myCreepsInRoom.length; i++) {
+    if (Game.getObjectById(this.memory.myCreepsInRoom[i]) != null)
+      myCreepsInRoom.push(Game.getObjectById(this.memory.myCreepsInRoom[i]))
+  }
+  var myConstructionSites = this.memory.roomConstructSitesIDs;
+  var creepType = '';
   const roomState = this.memory.roomState;
   //console.log('roomState: '+roomState);
 
@@ -17,19 +17,19 @@ Room.prototype.getNextCreepToSpawn = function() {
   //get num of miners
   numMiners1 = _.sum(myCreepsInRoom, c => c.memory.role === 'miner1');
   numMiners2 = _.sum(myCreepsInRoom, c => c.memory.role === 'miner2');
-  console.log('numMiners1: '+numMiners1.toString());
-	console.log('numMiners2: '+numMiners2.toString());
+  console.log('numMiners1: ' + numMiners1.toString());
+  console.log('numMiners2: ' + numMiners2.toString());
   //get num of harvesters
   numHarvesters = _.sum(myCreepsInRoom, c => c.memory.role === 'harvester');
-	console.log('numHarvesters: '+numHarvesters.toString());
+  console.log('numHarvesters: ' + numHarvesters.toString());
   //get num of Builders
   numBuilders = _.sum(myCreepsInRoom, c => c.memory.role === 'builder');
-	console.log('numBuilders: '+numBuilders.toString());
+  console.log('numBuilders: ' + numBuilders.toString());
 
   numRepairers = _.sum(myCreepsInRoom, c => c.memory.role === 'repairer');
-	console.log('numRepairers: '+numRepairers.toString());
+  console.log('numRepairers: ' + numRepairers.toString());
   numUpgraders = _.sum(myCreepsInRoom, c => c.memory.role === 'upgrader');
-	console.log('numUpgraders: '+numUpgraders.toString());
+  console.log('numUpgraders: ' + numUpgraders.toString());
 
   //get num of remote harvesters
   //numRemoteHarvesters = _.sum(creepsInRoom, c => c.memory.role === 'remoteHarvester');
@@ -41,32 +41,39 @@ Room.prototype.getNextCreepToSpawn = function() {
 
       minMiners1 = 1;
       minMiners2 = 1;
-      minHarvesters = 2;
+      minHarvesters = 1;
       minBuilders = 1;
       minUpgraders = 1;
+      minRepairers = 1;
       //  minRemoteHarvesters = 0;
 
       //run through priority of creeps looking for first one that is below the desired limit
       if (numMiners1 < minMiners1) {
         //  console.log('B:M1');
         creepType = 'miner1';
+        break;
 
       } else if (numMiners2 < minMiners2) {
         //  console.log('B:M2');
         creepType = 'miner2';
-
+        break;
+      } else if (numBuilders < minBuilders && myConstructionSites.length > 0 && myConstructionSites != null) {
+        //  console.log('B:B');
+        creepType = 'builder';
+        break;
       } else if (numHarvesters < minHarvesters) {
         //    console.log('B:H');
         creepType = 'harvester';
-
-      } else if (numBuilders < minBuilders && myConstructionSites[0] != undefined) {
-        //  console.log('B:B');
-        creepType = 'builder';
+        break;
 
       } else if (numUpgraders < minUpgraders) {
         //  console.log('B:U');
         creepType = 'upgrader';
+        break;
 
+      } else if (numRepairers < minRepairers) {
+        creepType = 'repairer'
+        break;
       }
       break;
       //----------
@@ -85,25 +92,31 @@ Room.prototype.getNextCreepToSpawn = function() {
       if (numMiners1 < minMiners1) {
         //    console.log('I:M1');
         creepType = 'miner1';
+        break;
 
       } else if (numMiners2 < minMiners2) {
         //  console.log('I:M2');
         creepType = "miner2"
+        break;
 
       } else if (numHarvesters < minHarvesters) {
         //    console.log('I:H');
         creepType = 'harvester';
+        break;
 
-      } else if (numBuilders < minBuilders && myConstructionSites[0] != undefined) {
+      } else if (numBuilders < minBuilders && myConstructionSites.length > 0 && myConstructionSites != null) {
         //    console.log('I:B');
         creepType = 'builder';
+        break;
 
       } else if (numUpgraders < minUpgraders) {
         //  console.log('I:U');
         creepType = 'upgrader';
+        break;
 
       } else if (numRepairers < minRepairers) {
         creepType = 'repairer'
+        break;
       }
       /*  if(numRemoteHarvesters < minRemoteHarvesters)
         {
@@ -136,7 +149,7 @@ Room.prototype.getNextCreepToSpawn = function() {
         //  console.log('A:H');
         creepType = 'harvester';
 
-      } else if (numBuilders < minBuilders && myConstructionSites[0] != undefined) {
+      } else if (numBuilders < minBuilders && myConstructionSites.length > 0 && myConstructionSites != null) {
         //  console.log('A:B');
         creepType = 'builder';
 
@@ -168,7 +181,6 @@ Room.prototype.getNextCreepToSpawn = function() {
 
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////// TO DO!!!!!
-
 Room.prototype.spawnNextCreep = function(creepType) {
   //console.log('SpawnNextCreep:debug');
   //get energy available and check if its enough for the cost of the creep
@@ -250,6 +262,8 @@ Room.prototype.spawnNextCreep = function(creepType) {
         //    console.log("ERROR: " + this.name + " attempted to spawn a " + creepType + ", this is an invalid parameter.")
         break;
     }
+  } else {
+    //console.log("NOT ENOUGH");
   }
 
 
@@ -269,21 +283,21 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
     case 'miner1':
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
-          if (energyCapacity > 300) {
+          if (energyCapacity >= 300) {
             temp_energy = 300;
           }
           energyCost = temp_energy;
           break;
 
         case 'ROOM_STATE_INTERMEDIATE':
-          if (energyCapacity > 400) {
+          if (energyCapacity >= 400) {
             temp_energy = 400;
           }
           energyCost = temp_energy;
           break;
 
         case 'ROOM_STATE_ADVANCED':
-          if (energyCapacity > 500) {
+          if (energyCapacity >= 500) {
             temp_energy = 500;
           }
           energyCost = temp_energy;
@@ -303,21 +317,21 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
     case 'miner2':
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
-          if (energyCapacity > 300) {
+          if (energyCapacity >= 300) {
             temp_energy = 300;
           }
           energyCost = temp_energy;
           break;
 
         case 'ROOM_STATE_INTERMEDIATE':
-          if (energyCapacity > 400) {
+          if (energyCapacity >= 400) {
             temp_energy = 400;
           }
           energyCost = temp_energy;
           break;
 
         case 'ROOM_STATE_ADVANCED':
-          if (energyCapacity > 500) {
+          if (energyCapacity >= 500) {
             temp_energy = 500;
           }
           energyCost = temp_energy;
@@ -340,7 +354,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
           //beginner room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity > 200) {
+          if (energyCapacity >= 200) {
             temp_energy = 200;
           }
 
@@ -350,7 +364,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_INTERMEDIATE':
           //intermediate room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity > 250) {
+          if (energyCapacity >= 250) {
             temp_energy = 250;
           }
 
@@ -360,7 +374,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_ADVANCED':
           //advanced room, scale harvester cost and cap at 1100 (1 work, 500 capacity)
-          if (energyCapacity > 300) {
+          if (energyCapacity >= 300) {
             temp_energy = 300;
           }
 
@@ -385,7 +399,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
           //beginner room, scale worker, cap at 800 (4 work, 200 capacity)
-          if (energyCapacity > 300) {
+          if (energyCapacity >= 300) {
             temp_energy = 300;
           }
 
@@ -395,7 +409,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_INTERMEDIATE':
           //intermediate room, scale worker, cap at 1100 (5 work, 300 capacity)
-          if (energyCapacity > 400) {
+          if (energyCapacity >= 400) {
             temp_energy = 400;
           }
 
@@ -405,7 +419,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_ADVANCED':
           //advanced room, scale worker, cap at 1500 (5 work, 500 capacity)
-          if (energyCapacity > 400) {
+          if (energyCapacity >= 400) {
             temp_energy = 400;
           }
 
@@ -428,21 +442,21 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
 
-          if (energyCapacity > 200) {
+          if (energyCapacity >= 200) {
             temp_energy = 200;
           }
           energyCost = temp_energy;
           break;
         case 'ROOM_STATE_INTERMEDIATE':
 
-          if (energyCapacity > 400) {
+          if (energyCapacity >= 400) {
             temp_energy = 400;
           }
           energyCost = temp_energy;
           break;
         case 'ROOM_STATE_ADVANCED':
 
-          if (energyCapacity > 400) {
+          if (energyCapacity >= 400) {
             temp_energy = 400;
           }
           energyCost = temp_energy;
@@ -460,7 +474,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
           //beginner room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity > 200) {
+          if (energyCapacity >= 200) {
             temp_energy = 200;
           }
 
@@ -470,7 +484,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_INTERMEDIATE':
           //intermediate room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity > 250) {
+          if (energyCapacity >= 250) {
             temp_energy = 250;
           }
 
@@ -480,7 +494,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_ADVANCED':
           //advanced room, scale harvester cost and cap at 1100 (1 work, 500 capacity)
-          if (energyCapacity > 300) {
+          if (energyCapacity >= 300) {
             temp_energy = 300;
           }
 
@@ -504,7 +518,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
           //beginner room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity > 200) {
+          if (energyCapacity >= 200) {
             temp_energy = 200;
           }
 
@@ -514,7 +528,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_INTERMEDIATE':
           //intermediate room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity > 250) {
+          if (energyCapacity >= 250) {
             temp_energy = 250;
           }
 
@@ -524,7 +538,7 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_ADVANCED':
           //advanced room, scale harvester cost and cap at 1100 (1 work, 500 capacity)
-          if (energyCapacity > 300) {
+          if (energyCapacity >= 300) {
             temp_energy = 300;
           }
 

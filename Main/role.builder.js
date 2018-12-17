@@ -1,79 +1,89 @@
+Room.prototype.runBuilder = function(creep) {
+  var idleFlag;
+  var roomFlags = [];
+  var sites = [];
+  var containers = [];
+  var spawns =[];
+  var storage = Game.getObjectById(this.memory.roomStorageID);
+  for (var i in Game.flags) {
+    if (Game.flags[i].room.name == this.name) {
+      roomFlags.push(Game.flags[i]);
+    }
+  }
+  for (let i = 0; i < roomFlags.length; i++) {
+    if (roomFlags[i].color == COLOR_WHITE) {
+      idleFlag = roomFlags[i];
+    }
+  }
+	for (let i=0; i<this.memory.roomSpawnIDs.length; i++) {
+		if (Game.getObjectById(this.memory.roomSpawnIDs[i]) != null) {
+			spawns.push(Game.getObjectById(this.memory.roomSpawnIDs[i]));
+		}
+	}
+  for (let i = 0; i < this.memory.roomConstructSitesIDs.length; i++) {
+    if (Game.getObjectById(this.memory.roomConstructSitesIDs[i]) != null)
+      sites.push(Game.getObjectById(this.memory.roomConstructSitesIDs[i]));
+  }
+  if (this.memory.roomContainersIDs != null) {
+    for (let i = 0; i < this.memory.roomContainersIDs.length; i++) {
+      if (Game.getObjectById(this.memory.roomContainersIDs[i]) != null) {
+        containers.push(Game.getObjectById(this.memory.roomContainersIDs[i]));
+      }
+    }
+  }
+  var main_withdraw;
+  if (storage != null && storage.store[RESOURCE_ENERGY] > 0) {
+    main_withdraw = storage;
+  } else if (containers.length >0) {
+		main_withdraw = creep.pos.findClosestByRange(containers, {filter: (i) => {
+			return i.store[RESOURCE_ENERGY] > 1/2*i.storeCapacity;
+		}});
+  } else {
+		main_withdraw = creep.pos.findClosestByRange(spawns);
+	}
 
-Room.prototype.runBuilder= function(creep) {
-        var withdraw_target = creep.room.find(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_CONTAINER)&& structure.store[RESOURCE_ENERGY] >= 1/2*structure.storeCapacity;
+  var main_deposit;
+  if (storage != null && storage.store[RESOURCE_ENERGY] < storage.storeCapacity) {
+    main_deposit = storage;
+  } else {
+    main_deposit = creep.pos.findClosestByPath(containers, {
+      filter: (structure) => {
+        return (structure.energy < structure.energyCapacity);
+      }
+    });
+  }
 
-                    }
-            });
+  if (creep.memory.building && creep.carry.energy == 0) {
+    creep.memory.building = false;
+  }
+  if (!creep.memory.building && creep.carry.energy == creep.carryCapacity && sites.length > 0) {
+    creep.memory.building = true;
+  }
 
-        var idleFlag = creep.room.find(FIND_FLAGS,{filter:(i)=>{return(i.name=='IdleFlag1');}});
-
-        var deposit_target = creep.room.find(FIND_STRUCTURES,{filter:(i)=>{return(i.structureType==STRUCTURE_CONTAINER)&&i.store[RESOURCE_ENERGY]<i.storeCapacity;}});
-        var build_target = creep.room.find(FIND_CONSTRUCTION_SITES);
-        var spawn = creep.room.find(FIND_STRUCTURES,{filter:(i)=>{return(i.structureType==STRUCTURE_SPAWN);}});
-	    if(creep.memory.building && creep.carry.energy == 0) {
-            creep.memory.building = false;
-            console.log(creep.name+' 🔄 harvest');
-	    }
-	    if(!creep.memory.building && creep.carry.energy == creep.carryCapacity && build_target.length > 0) {
-	        creep.memory.building = true;
-	        console.log(creep.name+' 🚧 build');
-	    }
-
-
-	    if(creep.memory.building) {
-
-
-            if(build_target.length>0) {
-
-                if(creep.build(build_target[0]) == ERR_NOT_IN_RANGE && creep.carry.energy != 0) {
-                   creep.moveTo(build_target[0], {visualizePathStyle: {stroke: '#ffffff'}});
-                   }
-
-            }
-
-            if(build_target.length==0 && creep.carry.energy >0){
-                if(creep.transfer(deposit_target[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
-                  creep.moveTo(deposit_target[0]);
-                }
-            }
-
-	    }
-	    else{
-	           if(build_target.length>0 && creep.withdraw(withdraw_target[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
-	             creep.moveTo(withdraw_target[0])
-                }else{
-                    if(creep.carry.energy>0){
-                       if(creep.transfer(deposit_target[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
-                        creep.moveTo(deposit_target[0]);
-                        }
-                    }else{
-                    creep.moveTo(idleFlag[0]);
-                    }
-                }
-
-
-            }
+  if (creep.memory.building) {
+    if (sites.length > 0) {
+      var build_target = creep.pos.findClosestByPath(sites)
+      if (creep.build(build_target) == ERR_NOT_IN_RANGE && creep.carry.energy != 0) {
+        creep.moveTo(build_target);
+      }
     }
 
-
-
-
-
-
-	  /* if (creep.room.find(creep.memory.role == 'upgrader')){                                   //// THIS IS MY ROAD BUILDER BASED ON UPGRADERS/REPAIRERS.
-	      // creep.say('BU: 16');
-	       var upgraders = _.filter(Game.creeps,(creep) => creep.memory.role == 'upgrader');
-	       var harvesters = _.filter(Game.creeps,(creep)=> creep.memory.role == 'harvester');
-	       if (upgraders.pos != STRUCTURE_ROAD){
-	          for (i=0; i< upgraders.length -1; i++){
-	          creep.room.createConstructionSite(upgraders[i].pos, STRUCTURE_ROAD);
-	          }
-	       }
-	       if (harvesters.pos != STRUCTURE_ROAD){
-	           for (i=0; i< harvesters.length -1; i++){
-	               creep.room.createConstructionSite(harvesters[i].pos, STRUCTURE_ROAD);
-	           }
-	       }
-	   } */
+    if (sites.length == 0 && creep.carry.energy > 0) {
+      if (creep.transfer(main_deposit, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(main_deposit);
+      }
+    }
+  } else {
+    if (sites.length > 0 && creep.withdraw(main_withdraw, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+      creep.moveTo(main_withdraw);
+    } else {
+      if (creep.carry.energy > 0) {
+        if (creep.transfer(main_deposit, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(main_deposit);
+        }
+      } else {
+        creep.moveTo(idleFlag);
+      }
+    }
+  }
+}
