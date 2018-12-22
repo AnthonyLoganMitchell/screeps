@@ -5,7 +5,7 @@ Room.prototype.runUpgrader = function(creep) {
   var sources = [];
 	var extensions = [];
   for (var i in Game.flags) {
-    if (Game.flags[i].room.name == this.name) {
+		if (Game.flags[i].room === this) {
       roomFlags.push(Game.flags[i]);
     }
   }

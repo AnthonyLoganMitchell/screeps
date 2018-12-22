@@ -1,18 +1,86 @@
 require('prototype.spawn');
 Room.prototype.getNextCreepToSpawn = function() {
+	this.memory.attackCondition = false;
   //console.log('GetNextCreepToSpawn:debug');
   var myCreepsInRoom = [];
-  for (let i = 0; i < this.memory.myCreepsInRoom.length; i++) {
-    if (Game.getObjectById(this.memory.myCreepsInRoom[i]) != null)
-      myCreepsInRoom.push(Game.getObjectById(this.memory.myCreepsInRoom[i]))
+  var globalCreeps = [];
+  var globalAttackers = [];
+  var attackFlag = null;
+  var minMiners1, minMiners2, minHarvesters, minBuilders, minRemoteHarvesters, minUpgraders;
+  var numMiners1, numMiners2, numHarvesters, numBuilders, numRemoteHarvesters, numUpgraders;
+  var minAttackers;
+  var numAttackers = 0;
+
+
+  for (let i = 0; i < this.memory.myCreepsIDs.length; i++) {
+    if (Game.getObjectById(this.memory.myCreepsIDs[i]) != null && Game.getObjectById(this.memory.myCreepsIDs[i]).room.name == this.name) {
+      myCreepsInRoom.push(Game.getObjectById(this.memory.myCreepsIDs[i]));
+      if (Game.getObjectById(this.memory.myCreepsIDs[i]).memory.role == 'attacker' && Game.getObjectById(this.memory.myCreepsIDs[i]).room.name == this.name) {
+        numAttackers++;
+      }
+    }
   }
+
   var myConstructionSites = this.memory.roomConstructSitesIDs;
   var creepType = '';
   const roomState = this.memory.roomState;
-  //console.log('roomState: '+roomState);
+  switch (roomState) {
+    case 'ROOM_STATE_BEGINNER':
+      minMiners1 = 1;
+      minMiners2 = 1;
+      minHarvesters = 1;
+      minBuilders = 1;
+      minUpgraders = 1;
+      minRepairers = 1;
+      minAttackers = 0;
+      break;
+    case 'ROOM_STATE_INTERMEDIATE':
+      minMiners1 = 1;
+      minMiners2 = 1;
+      minHarvesters = 2;
+      minBuilders = 1;
+      minUpgraders = 1;
+      minRepairers = 1;
+      minAttackers = 0;
+      break;
+    case 'ROOM_STATE_ADVANCED':
+      minMiners1 = 1;
+      minMiners2 = 1;
+      minHarvesters = 2;
+      minBuilders = 1;
+      minUpgraders = 1;
+      minRepairers = 1;
+      minAttackers = 3;
+      break;
+  }
+	if (this.memory.attackCondition == undefined && numAttackers == minAttackers) {
+		this.memory.attackCondition = true;
+	} else if (this.memory.attackCondition == undefined && numAttackers < minAttackers){
+		this.memory.attackCondition = false;
+	} else if (this.memory.attackCondition != undefined && numAttackers == minAttackers) {
+		this.memory.attackCondition = true;
+	} else if (this.memory.attackCondition != undefined && numAttackers < minAttackers) {
+		this.memory.attackCondition = false;
+	}
 
-  var minMiners1, minMiners2, minHarvesters, minBuilders, minRemoteHarvesters, minUpgraders;
-  var numMiners1, numMiners2, numHarvesters, numBuilders, numRemoteHarvesters, numUpgraders;
+
+
+  for (name in Game.creeps) {
+    if (Game.creeps[name].room.name != this.name) {
+      globalCreeps.push(Game.creeps[name]);
+    }
+  }
+  for (let i = 0; i < globalCreeps.length; i++) {
+    if (globalCreeps[i].memory.role === 'attacker' && globalCreeps[i].memory.homeRoom == this.name) {
+      numAttackers++;
+    }
+  }
+  for (i in Game.flags) {
+    if (Game.flags[i].name == "attackFlag" && this.controller.pos.getRangeTo(Game.flags[i].pos) < 1000) {
+      attackFlag = Game.flags[i];
+    }
+  }
+  console.log("AttackFlag: " + attackFlag);
 
   //get num of miners
   numMiners1 = _.sum(myCreepsInRoom, c => c.memory.role === 'miner1');
@@ -30,6 +98,8 @@ Room.prototype.getNextCreepToSpawn = function() {
   console.log('numRepairers: ' + numRepairers.toString());
   numUpgraders = _.sum(myCreepsInRoom, c => c.memory.role === 'upgrader');
   console.log('numUpgraders: ' + numUpgraders.toString());
+  console.log('numAttackers: ' + numAttackers.toString());
+
 
   //get num of remote harvesters
   //numRemoteHarvesters = _.sum(creepsInRoom, c => c.memory.role === 'remoteHarvester');
@@ -38,39 +108,22 @@ Room.prototype.getNextCreepToSpawn = function() {
   //check state of room to decide what creep priorities are
   switch (roomState) {
     case 'ROOM_STATE_BEGINNER':
-
-      minMiners1 = 1;
-      minMiners2 = 1;
-      minHarvesters = 1;
-      minBuilders = 1;
-      minUpgraders = 1;
-      minRepairers = 1;
-      //  minRemoteHarvesters = 0;
-
       //run through priority of creeps looking for first one that is below the desired limit
       if (numMiners1 < minMiners1) {
-        //  console.log('B:M1');
         creepType = 'miner1';
         break;
-
       } else if (numMiners2 < minMiners2) {
-        //  console.log('B:M2');
         creepType = 'miner2';
         break;
       } else if (numBuilders < minBuilders && myConstructionSites.length > 0 && myConstructionSites != null) {
-        //  console.log('B:B');
         creepType = 'builder';
         break;
       } else if (numHarvesters < minHarvesters) {
-        //    console.log('B:H');
         creepType = 'harvester';
         break;
-
       } else if (numUpgraders < minUpgraders) {
-        //  console.log('B:U');
         creepType = 'upgrader';
         break;
-
       } else if (numRepairers < minRepairers) {
         creepType = 'repairer'
         break;
@@ -79,134 +132,85 @@ Room.prototype.getNextCreepToSpawn = function() {
       //----------
 
     case 'ROOM_STATE_INTERMEDIATE':
-
-      minMiners1 = 1;
-      minMiners2 = 1;
-      minHarvesters = 2;
-      minBuilders = 1;
-      minUpgraders = 1;
-      minRepairers = 1;
-      //  minRemoteHarvesters = 0;
-
       //run through priority of creeps looking for first one that is below the desired limit
       if (numMiners1 < minMiners1) {
-        //    console.log('I:M1');
         creepType = 'miner1';
         break;
-
       } else if (numMiners2 < minMiners2) {
-        //  console.log('I:M2');
         creepType = "miner2"
         break;
-
       } else if (numHarvesters < minHarvesters) {
-        //    console.log('I:H');
         creepType = 'harvester';
         break;
-
       } else if (numBuilders < minBuilders && myConstructionSites.length > 0 && myConstructionSites != null) {
-        //    console.log('I:B');
         creepType = 'builder';
         break;
-
       } else if (numUpgraders < minUpgraders) {
-        //  console.log('I:U');
         creepType = 'upgrader';
         break;
-
       } else if (numRepairers < minRepairers) {
         creepType = 'repairer'
         break;
       }
-      /*  if(numRemoteHarvesters < minRemoteHarvesters)
-        {
-            creepType = 'remoteHarvester';
-            break;
-        }*/
       break;
       //----------
 
     case 'ROOM_STATE_ADVANCED':
-
-      minMiners1 = 1;
-      minMiners2 = 1;
-      minHarvesters = 2;
-      minBuilders = 1;
-      minUpgraders = 1;
-      minRepairers = 1;
-      //    minRemoteHarvesters = 0;
-
       //run through priority of creeps looking for first one that is below the desired limit
       if (numMiners1 < minMiners1) {
-        //  console.log('A:M1');
         creepType = 'miner1';
-
+        break;
       } else if (numMiners2 < minMiners2) {
-        //console.log('A:M2');
         creepType = 'miner2';
-
+        break;
       } else if (numHarvesters < minHarvesters) {
-        //  console.log('A:H');
         creepType = 'harvester';
-
+        break;
       } else if (numBuilders < minBuilders && myConstructionSites.length > 0 && myConstructionSites != null) {
-        //  console.log('A:B');
         creepType = 'builder';
-
+        break;
       } else if (numUpgraders < minUpgraders) {
         //console.log('A:U');
         creepType = 'upgrader';
-
+        break;
       } else if (numRepairers < minRepairers) {
         creepType = 'repairer'
+        break;
+      } else if (numAttackers < minAttackers && attackFlag != null) {
+        creepType = 'attacker'
+        break;
       }
-      /*  if(numRemoteHarvesters < minRemoteHarvesters)
-        {
-            creepType = 'remoteHarvester';
-            break;
-        }*/
       break;
-      //----------
 
     default:
-      //print error code
       console.log("ERROR: " + this.name + " :: getNextCreepToSpawn received an unhandled roomState.");
       break;
-      //----------
   }
-  //----------
-  //console.log('creepType: ' + creepType);
   return creepType;
-
-
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////// TO DO!!!!!
 Room.prototype.spawnNextCreep = function(creepType) {
-  //console.log('SpawnNextCreep:debug');
   //get energy available and check if its enough for the cost of the creep
   //if so proceed with spawning
   const energyAvailable = this.energyAvailable;
   const creepEnergyCost = this.getCreepEnergyCost(creepType);
+  console.log("CREEPCOST: " + creepEnergyCost);
   //console.log(creepEnergyCost);
   var creepsInRoom = this.memory.creepsInRoom;
 
   if (energyAvailable >= creepEnergyCost) {
-
     //get all spawns in the room
-    var allSpawns = this.find(FIND_STRUCTURES, {
-      filter: {
-        structureType: STRUCTURE_SPAWN
-      }
-    });
+    var allSpawns = this.memory.roomSpawnIDs;
     var activeSpawn;
 
     //loop through spawns to find the first one currently available
-    for (let spawn in allSpawns) {
-      if (!spawn.spawning) {
-        activeSpawn = allSpawns[spawn];
+    if (allSpawns != null) {
+      for (let i = 0; i < allSpawns.length; i++) {
+        if (!Game.getObjectById(allSpawns[i]).spawning) {
+          activeSpawn = Game.getObjectById(allSpawns[i]);
+        }
       }
     }
-
 
     //check which type of creep is being requested
     switch (creepType) {
@@ -214,7 +218,7 @@ Room.prototype.spawnNextCreep = function(creepType) {
         //  console.log(creepType);
         //get miners in room
         var miners1InRoom = _.filter(creepsInRoom, c => c.memory.role === 'miner1');
-        if (activeSpawn != undefined) {
+        if (activeSpawn != null) {
           activeSpawn.createMiner1(this.name, creepEnergyCost);
         }
 
@@ -223,7 +227,7 @@ Room.prototype.spawnNextCreep = function(creepType) {
       case 'miner2':
         //      console.log(creepType);
         var miners2InRoom = _.filter(creepsInRoom, c => c.memory.role === 'miner2')
-        if (activeSpawn != undefined) {
+        if (activeSpawn != null) {
           activeSpawn.createMiner2(this.name, creepEnergyCost);
         }
 
@@ -232,7 +236,7 @@ Room.prototype.spawnNextCreep = function(creepType) {
       case 'harvester':
         //      console.log(creepType);
         //spawn harvester
-        if (activeSpawn != undefined) {
+        if (activeSpawn != null) {
           activeSpawn.createHarvester(this.name, creepEnergyCost);
         }
         //////////////////////<<<<<<<<<<<<
@@ -241,22 +245,25 @@ Room.prototype.spawnNextCreep = function(creepType) {
       case 'builder':
         //    console.log(creepType);
         //spawn worker
-        if (activeSpawn != undefined) {
+        if (activeSpawn != null) {
           activeSpawn.createBuilder(this.name, creepEnergyCost);
         }
         //////////////////////<<<<<<<<<<<<
         break;
       case 'repairer':
-        if (activeSpawn != undefined) {
+        if (activeSpawn != null) {
           activeSpawn.createRepairer(this.name, creepEnergyCost);
         }
         break;
 
       case 'upgrader':
-        if (activeSpawn != undefined) {
+        if (activeSpawn != null) {
           activeSpawn.createUpgrader(this.name, creepEnergyCost);
         }
-
+      case 'attacker':
+        if (activeSpawn != null) {
+          activeSpawn.createAttacker(this.name, creepEnergyCost);
+        }
       default:
         //something went wrong, print error message
         //    console.log("ERROR: " + this.name + " attempted to spawn a " + creepType + ", this is an invalid parameter.")
@@ -312,8 +319,6 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
           break;
       }
       break;
-      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     case 'miner2':
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
@@ -346,9 +351,6 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
           break;
       }
       break;
-      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
     case 'harvester':
       //check room state to decide the cost of the harvester
       switch (roomState) {
@@ -364,8 +366,8 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_INTERMEDIATE':
           //intermediate room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity >= 250) {
-            temp_energy = 250;
+          if (energyCapacity >= 300) {
+            temp_energy = 300;
           }
 
           energyCost = temp_energy;
@@ -374,8 +376,8 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
         case 'ROOM_STATE_ADVANCED':
           //advanced room, scale harvester cost and cap at 1100 (1 work, 500 capacity)
-          if (energyCapacity >= 300) {
-            temp_energy = 300;
+          if (energyCapacity >= 500) {
+            temp_energy = 500;
           }
 
           energyCost = temp_energy;
@@ -392,8 +394,6 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
 
 
       break;
-      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     case 'builder':
       //check room state to decide the cost of the harvester
       switch (roomState) {
@@ -437,7 +437,6 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
       //-------------------
 
       break;
-      //--------------
     case 'upgrader':
       switch (roomState) {
         case 'ROOM_STATE_BEGINNER':
@@ -456,8 +455,8 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
           break;
         case 'ROOM_STATE_ADVANCED':
 
-          if (energyCapacity >= 400) {
-            temp_energy = 400;
+          if (energyCapacity >= 500) {
+            temp_energy = 500;
           }
           energyCost = temp_energy;
           break;
@@ -477,42 +476,30 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
           if (energyCapacity >= 200) {
             temp_energy = 200;
           }
-
           energyCost = temp_energy;
           break;
-
-
         case 'ROOM_STATE_INTERMEDIATE':
           //intermediate room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity >= 250) {
-            temp_energy = 250;
-          }
-
-          energyCost = temp_energy;
-          break;
-
-
-        case 'ROOM_STATE_ADVANCED':
-          //advanced room, scale harvester cost and cap at 1100 (1 work, 500 capacity)
           if (energyCapacity >= 300) {
             temp_energy = 300;
           }
-
+          energyCost = temp_energy;
+          break;
+        case 'ROOM_STATE_ADVANCED':
+          //advanced room, scale harvester cost and cap at 1100 (1 work, 500 capacity)
+          if (energyCapacity >= 400) {
+            temp_energy = 400;
+          }
           energyCost = temp_energy;
           break;
           //----------
-
         default:
           //something went wrong, print error message
           console.log("ERROR: " + this.name + " :: getCreepEnergyCost received an unreadable room state: " + roomState);
           energyCost = 0;
           break;
-
       }
-
-
       break;
-
     case 'upgrader':
       //check room state to decide the cost of the harvester
       switch (roomState) {
@@ -521,40 +508,41 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
           if (energyCapacity >= 200) {
             temp_energy = 200;
           }
-
           energyCost = temp_energy;
           break;
-
-
         case 'ROOM_STATE_INTERMEDIATE':
           //intermediate room, scale harvester cost and cap at 900 (1 work, 400 capacity)
-          if (energyCapacity >= 250) {
-            temp_energy = 250;
-          }
-
-          energyCost = temp_energy;
-          break;
-
-
-        case 'ROOM_STATE_ADVANCED':
-          //advanced room, scale harvester cost and cap at 1100 (1 work, 500 capacity)
           if (energyCapacity >= 300) {
             temp_energy = 300;
           }
-
+          energyCost = temp_energy;
+          break;
+        case 'ROOM_STATE_ADVANCED':
+          //advanced room, scale harvester cost and cap at 1100 (1 work, 500 capacity)
+          if (energyCapacity >= 400) {
+            temp_energy = 400;
+          }
           energyCost = temp_energy;
           break;
           //----------
-
         default:
           //something went wrong, print error message
           //    console.log("ERROR: " + this.name + " :: getCreepEnergyCost received an unreadable room state: " + roomState);
           energyCost = 0;
           break;
-
       }
-
-
+      break;
+    case 'attacker':
+      switch (roomState) {
+        case 'ROOM_STATE_ADVANCED':
+          if (energyCapacity >= 600) {
+            temp_energy = 600;
+          }
+          energyCost = temp_energy;
+          break;
+        default:
+          break;
+      }
       break;
     default:
       //something went wrong, print error message

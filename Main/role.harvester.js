@@ -6,7 +6,7 @@ Room.prototype.runHarvester = function(creep) {
   var containers = [];
   var storage = Game.getObjectById(this.memory.roomStorageID);
   for (var i in Game.flags) {
-    if (Game.flags[i].room.name == this.name) {
+    if (Game.flags[i].room === this) {
       roomFlags.push(Game.flags[i]);
     }
   }
@@ -46,14 +46,13 @@ Room.prototype.runHarvester = function(creep) {
   }
   var main_target = creep.pos.findClosestByRange(targetsReal);
 
-  var main_withdraw;
-  if (storage != null && storage.store[RESOURCE_ENERGY] > 0) {
+  var main_withdraw = creep.pos.findClosestByRange(containers, {filter: (i) => {
+		return(i.store[RESOURCE_ENERGY] > 1/4*i.storeCapacity);
+	}});
+  if (main_withdraw == null && storage.store[RESOURCE_ENERGY] > 0) {
     main_withdraw = storage;
-  } else {
-    main_withdraw = creep.pos.findClosestByRange(containers, {filter: (i) => {
-			return(i.store[RESOURCE_ENERGY] > 1/3*i.storeCapacity);
-		}});
   }
+
   var main_deposit;
   if (storage != null && storage.store[RESOURCE_ENERGY] < storage.storeCapacity) {
     main_deposit = storage;
@@ -70,7 +69,9 @@ Room.prototype.runHarvester = function(creep) {
   if (creep.carry.energy < 1 / 2 * creep.carryCapacity && main_target != null) {
     if (creep.withdraw(main_withdraw, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
       creep.moveTo(main_withdraw);
-    }
+    }else if (main_withdraw == null) {
+			creep.moveTo(idleFlag);
+		}
   } else {
     if (main_target != null) {
       if (creep.transfer(main_target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {

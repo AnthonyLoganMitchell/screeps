@@ -1,30 +1,61 @@
-Room.prototype.runAttacker = function(creep,flag){
-        var attack_flag = creep.room.find(FIND_FLAGS,{filter:(i)=>{return(i.name=='attackFlag1');}});
-        var allies = creep.room.find(FIND_MY_CREEPS,{filter:(i)=>{return(i.memory.role == 'attacker');}});
-        var my_controller_query = creep.room.find(FIND_STRUCTURES,{filter:(i)=>{return(i.structureType==STRUCTURE_CONTROLLER && i.owner !='smokums')}});
-        var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        var target_structures = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES);
+Room.prototype.runAttacker = function(creep) {
+  var attackFlag;
+  var typeArr = [];
+  var enemyCreeps = [];
+  var enemyTowers = [];
+  //console.log(creep.room.controller.owner.username);
+  enemyCreeps = null;
+  for (var i in Game.flags) {
+    if (Game.flags[i].name == "attackFlag") {
+      attackFlag = Game.flags[i]
+    }
+  }
+	//console.log(attackFlag.pos.roomName);
+  if (this.memory.enemyStructureIDs == undefined || creep.room.executeOnTicks(10)) {
+    this.memory.enemyStructureIDs = [];
+    var tmp = creep.room.find(FIND_HOSTILE_STRUCTURES);
+    for (let i = 0; i < tmp.length; i++) {
+      this.memory.enemyStructureIDs.push(tmp[i].id);
+    }
+  } else {
+		for (let i = 0; i< this.memory.enemyStructureIDs.length; i++) {
+			if (Game.getObjectById(this.memory.enemyStructureIDs[i]) != null && Game.getObjectById(this.memory.enemyStructureIDs[i]).structureType == STRUCTURE_TOWER) {
+				enemyTowers.push(Game.getObjectById(this.memory.enemyStructureIDs[i]));
+			}
+		}
+  }
 
-       if(attack_flag[0] != flag){
+	if (this.memory.enemyCreepIDs == undefined || creep.room.executeOnTicks(10)) {
+    this.memory.enemyCreepIDs = [];
+    var tmp = creep.room.find(FIND_HOSTILE_CREEPS);
+    for (let i = 0; i < tmp.length; i++) {
+      this.memory.enemyCreepIDs.push(tmp[i].id);
+    }
+  } else {
+		for (let i = 0; i< this.memory.enemyCreepIDs.length; i++) {
+			if (Game.getObjectById(this.memory.enemyCreepIDs[i]) != null) {
+				enemyCreeps.push(Game.getObjectById(this.memory.enemyCreepIDs[i]));
+			}
+		}
+  }
 
-        creep.moveTo(flag);
-       }else{
-
-           if(creep.attack(target) == ERR_NOT_IN_RANGE){
-               creep.moveTo(target);
-           }
-           else if(creep.attack(target_structures) == ERR_NOT_IN_RANGE && target_structures.structureType != STRUCTURE_CONTROLLER){
-               creep.moveTo(target_structures);
-
-             }else{
-                creep.moveTo(flag);
-             }
-
-
-
-         }
-
-
-
-
+  if ((attackFlag != null || attackFlag != undefined) && this.memory.attackCondition == true) {
+    if (creep.room.name == attackFlag.pos.roomName) {
+			if (enemyTowers[0] != undefined) {
+				var target = creep.pos.findClosestByRange(enemyTowers);
+				if (creep.attack(target) == ERR_NOT_IN_RANGE) {
+					creep.moveTo(target);
+				}
+			} else if (enemyCreeps != null) {
+				var target = creep.pos.findClosestByRange(enemyCreeps);
+				if (creep.attack(target) == ERR_NOT_IN_RANGE) {
+					creep.moveTo(target);
+				}
+			} else {
+				creep.moveTo(attackFlag);
+			}
+    } else {
+			creep.moveTo(attackFlag);
+    }
+  }
 }

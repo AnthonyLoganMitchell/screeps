@@ -29,6 +29,7 @@ Spawn.prototype.createMiner1 = function(homeRoom, energy) {
     }
   });
 }
+
 Spawn.prototype.createMiner2 = function(homeRoom, energy) {
 	const rand = Game.time.toString();
   var body = [];
@@ -60,8 +61,6 @@ Spawn.prototype.createMiner2 = function(homeRoom, energy) {
     }
   });
 }
-
-
 
 Spawn.prototype.createHarvester = function(homeRoom, energy) {
   const rand = Game.time.toString();
@@ -154,13 +153,12 @@ Spawn.prototype.createUpgrader = function(homeRoom, energy) {
   const rand = Game.time.toString();
   var body = [];
   if (energy <= 300) {
-    body = [WORK];
-    energy -= 100;
-
+    body = [MOVE];
+    energy -= 50;
   } else {
     {
-      body = [WORK, WORK];
-      energy -= 200;
+      body = [MOVE, MOVE];
+      energy -= 100;
     }
   }
 
@@ -169,7 +167,7 @@ Spawn.prototype.createUpgrader = function(homeRoom, energy) {
   //loop through and add carry and move parts the remaining allowed amount
   for (let i = 0; i < maxParts; ++i) {
     body.push(CARRY);
-    body.push(MOVE);
+    body.push(WORK);
   }
 
   //create remoteHarvester
@@ -180,4 +178,24 @@ Spawn.prototype.createUpgrader = function(homeRoom, energy) {
       //     targetRoom: targetRoom
     }
   });
+}
+
+Spawn.prototype.createAttacker= function(homeRoom, energy) {
+	const rand = Game.time.toString();
+	console.log(energy);
+	var body = [];
+	body = [MOVE, MOVE, MOVE, MOVE];
+	energy -= 200;
+	const maxParts = Math.floor(energy / 100);
+
+	for (let i = 0; i < maxParts; ++i) {
+		body.push(ATTACK);
+		body.push(TOUGH);
+	}
+	this.spawnCreep(body, rand, {
+		memory: {
+			role: 'attacker',
+			homeRoom: homeRoom,
+		}
+	});
 }
