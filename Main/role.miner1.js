@@ -36,7 +36,7 @@ Room.prototype.runMiner1 = function(creep) {
     }
   });
   if (creep.carry.energy < creep.carryCapacity) {
-    if (this.memory.roomSourcesIDs.length > 1) {
+    if (this.memory.roomSourcesIDs != undefined && this.memory.roomSourcesIDs.length > 1 && creep.memory.homeRoom == this.name) {
       creep.moveTo(sources[0]);
       creep.harvest(sources[0]);
     }
