@@ -33,10 +33,10 @@ Room.prototype.runMiner2 = function(creep) {
   var main_storage = creep.pos.findClosestByPath(storage,{filter: (i) => {return (i.store[RESOURCE_ENERGY] < i.storeCapacity);}});
 
   if (creep.carry.energy < creep.carryCapacity) {
-		if (this.memory.roomSourcesIDs.length >1){
+		if (this.memory.roomSourcesIDs != undefined && this.memory.roomSourcesIDs.length > 1 && creep.memory.homeRoom == this.name){
 			creep.moveTo(sources[1]);
 			creep.harvest(sources[1]);
-		}else {
+		}else if (this.memory.roomSourcesIDs != undefined && this.memory.roomSourcesIDs.length == 1 && creep.memory.homeRoom == this.name){
 			creep.moveTo(sources[0]);
 			creep.harvest(sources[0]);
 		}
