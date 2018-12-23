@@ -8,7 +8,7 @@ Room.prototype.runRepairer = function(creep) {
   var roads = [];
   var storage = Game.getObjectById(this.memory.roomStorageID);
   for (var i in Game.flags) {
-		if (Game.flags[i].room === this) {
+    if (Game.flags[i].room === this) {
       roomFlags.push(Game.flags[i]);
     }
   }
@@ -28,23 +28,30 @@ Room.prototype.runRepairer = function(creep) {
       targetsTMP.push(this.memory.roomTowersIDs[i]);
     }
   }
+
   if (this.memory.roomRampartsIDs != null) {
     for (let i = 0; i < this.memory.roomRampartsIDs.length; i++) {
-      targetsTMP.push(this.memory.roomRampartsIDs[i]);
+			if (Game.getObjectById(this.memory.roomRampartsIDs[i]) != null && Game.getObjectById(this.memory.roomRampartsIDs[i]).room.name == creep.memory.homeRoom) {
+					targetsTMP.push(this.memory.roomRampartsIDs[i]);
+			}
     }
   }
   if (this.memory.roomSpawnIDs != null) {
     for (let i = 0; i < this.memory.roomSpawnIDs.length; i++) {
-      targetsTMP.push(this.memory.roomSpawnIDs[i]);
+			if (Game.getObjectById(this.memory.roomSpawnIDs[i]) != null && Game.getObjectById(this.memory.roomSpawnIDs[i]).room.name == creep.memory.homeRoom) {
+					targetsTMP.push(this.memory.roomSpawnIDs[i]);
+			}
     }
   }
   if (this.memory.roomRoadsIDs != null) {
     for (let i = 0; i < this.memory.roomRoadsIDs.length; i++) {
-      targetsTMP.push(this.memory.roomRoadsIDs[i]);
+			if (Game.getObjectById(this.memory.roomRoadsIDs[i]) != null && Game.getObjectById(this.memory.roomRoadsIDs[i]).room.name == creep.memory.homeRoom) {
+					targetsTMP.push(this.memory.roomRoadsIDs[i]);
+			}
     }
   }
-  for (let i = 0; i < targetsTMP.length; i++) {
-    if (Game.getObjectById(targetsTMP[i]).structureType != null) {
+  if (targetsTMP != null) {
+    for (let i = 0; i < targetsTMP.length; i++) {
       if (Game.getObjectById(targetsTMP[i]).structureType == STRUCTURE_RAMPART && Game.getObjectById(targetsTMP[i]).hits < 1 / 100 * Game.getObjectById(targetsTMP[i]).hitsMax) {
         targetsReal.push(Game.getObjectById(targetsTMP[i]));
       } else if (Game.getObjectById(targetsTMP[i]).structureType != STRUCTURE_RAMPART && Game.getObjectById(targetsTMP[i]).hits < Game.getObjectById(targetsTMP[i]).hitsMax) {
@@ -55,7 +62,7 @@ Room.prototype.runRepairer = function(creep) {
   var target_structure = creep.pos.findClosestByRange(targetsReal);
 
   var main_withdraw;
-  if (storage != null && storage.store[RESOURCE_ENERGY] > 0) {
+  if (storage != null && storage.store[RESOURCE_ENERGY] > 0 && storage.room.name == creep.memory.homeRoom) {
     main_withdraw = storage;
   } else {
     main_withdraw = creep.pos.findClosestByRange(containers, {
