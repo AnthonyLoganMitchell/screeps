@@ -76,7 +76,7 @@ Room.prototype.getNextCreepToSpawn = function() {
     }
   }
   for (i in Game.flags) {
-    if (Game.flags[i].name == "attackFlag" && this.controller.pos.getRangeTo(Game.flags[i].pos) < 1000) {
+    if (Game.flags[i].name == "attackFlag") {
       attackFlag = Game.flags[i];
     }
   }
@@ -379,6 +379,8 @@ Room.prototype.getCreepEnergyCost = function(creepType) {
           if (energyCapacity >= 500) {
             temp_energy = 500;
           }
+					//emergency manual code recovery
+					//temp_energy = 200;
 
           energyCost = temp_energy;
           break;
