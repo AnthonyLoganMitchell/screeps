@@ -21,14 +21,17 @@ Room.prototype.runRoom = function() {
     this.setRoomCreeps();
     this.setRoomObjects();
     this.setConstructionSites();
-    type = this.getNextCreepToSpawn();
-    if (type != '') {
-      this.spawnNextCreep(type);
+    if (this.controller.my) {
+      type = this.getNextCreepToSpawn();
+      if (type != '') {
+        this.spawnNextCreep(type);
+      }
     }
   }
   if (this.executeOnTicks(5)) {
     this.setRoomCreeps();
   }
+  //emergency code recovery.
   //this.spawnNextCreep('harvester');
 
   //console.log(this.memory.roomFlagsNames);
@@ -44,7 +47,7 @@ Room.prototype.runRoom = function() {
   }
 
   for (let i = 0; i < this.memory.myCreepsIDs.length; i++) {
-    if ((Game.getObjectById(this.memory.myCreepsIDs[i]) == null || this.memory.myCreepsIDs == null) && !spawnsInRoom[0].spawning) {
+    if ((Game.getObjectById(this.memory.myCreepsIDs[i]) == null || this.memory.myCreepsIDs == null)) {
       this.setRoomCreeps();
       type = this.getNextCreepToSpawn();
       if (type != '') {
@@ -63,42 +66,42 @@ Room.prototype.runRoom = function() {
       this.setRoomCreeps();
       continue;
     }
-    if (creep.memory.homeRoom == this.name) {
-      switch (creep.memory.role) {
-        case 'harvester':
-          this.runHarvester(creep);
-          break;
-        case 'upgrader':
-          this.runUpgrader(creep);
-          break;
-        case 'builder':
-          this.runBuilder(creep);
-          break;
-        case 'repairer':
-          this.runRepairer(creep);
-          break;
-        case 'miner1':
-          this.runMiner1(creep);
-          break
-        case 'miner2':
-          this.runMiner2(creep);
-          break
-        case 'attacker':
-          this.runAttacker(creep);
-          break;
-        case 'ranged_attacker':
-          this.runRangedAttacker(creep, attack_flag_2);
-          break;
-        case 'scout':
-          this.runScout(creep, capture_flag);
-          break;
-      }
+    switch (creep.memory.role) {
+      case 'harvester':
+        this.runHarvester(creep);
+        break;
+      case 'upgrader':
+        this.runUpgrader(creep);
+        break;
+      case 'builder':
+        this.runBuilder(creep);
+        break;
+      case 'repairer':
+        this.runRepairer(creep);
+        break;
+      case 'miner1':
+        this.runMiner1(creep);
+        break
+      case 'miner2':
+        this.runMiner2(creep);
+        break
+      case 'attacker':
+        this.runAttacker(creep);
+        break;
+      case 'ranged_attacker':
+        //  this.runRangedAttacker(creep, attack_flag_2);
+        break;
+      case 'scout':
+        this.runScout(creep, capture_flag);
+        break;
     }
+
   }
 }
 //SETROOMSTATE
 Room.prototype.setRoomState = function() {
   //set controller level to room memory
+
   if (!this.memory.roomName) {
     this.memory.roomName = this.name;
   }
@@ -117,6 +120,7 @@ Room.prototype.setRoomState = function() {
   } else {
     this.memory.roomState = "ROOM_STATE_BEGINNER";
   }
+
 }
 //SETROOMCREEPS
 Room.prototype.setRoomCreeps = function() {
@@ -169,7 +173,9 @@ Room.prototype.setRoomObjects = function() {
   this.memory.roomSpawnIDs = [];
   var roomSpawn = this.find(FIND_MY_SPAWNS);
   if (roomSpawn != undefined) {
-    this.memory.roomSpawnIDs.push(roomSpawn[0].id);
+    for (let i = 0; i < roomSpawn.length; i++) {
+      this.memory.roomSpawnIDs.push(roomSpawn[i].id);
+    }
   }
   //DONE/////////////////////////////////////////////////////// SPAWN_END
 
@@ -189,7 +195,6 @@ Room.prototype.setRoomObjects = function() {
   if (controllerLevel > 1) {
     //DONE///////////////////////////////////////////////////////////RAMPARTS
     this.memory.roomRampartsIDs = [];
-    this.memory.roomRamparts = [];
     var roomRamparts = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_RAMPART);
@@ -204,7 +209,6 @@ Room.prototype.setRoomObjects = function() {
 
     //DONE///////////////////////////////////////////////////////////WALLS
     this.memory.roomWallsIDs = [];
-    this.memory.roomWalls = [];
     var roomWalls = this.find(FIND_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_WALL);
@@ -219,7 +223,6 @@ Room.prototype.setRoomObjects = function() {
 
     //DONE///////////////////////////////////////////////////////////EXTENSIONS
     this.memory.roomExtensionsIDs = [];
-    this.memory.roomExtensions = [];
     var roomExtensions = this.find(FIND_MY_STRUCTURES, {
       filter: (i) => {
         return (i.structureType == STRUCTURE_EXTENSION);
@@ -332,6 +335,7 @@ Room.prototype.setRoomObjects = function() {
       }
     }
   } // Level 8 or higher controller_end
+  ////
 }
 //CONSTRUCTIONSITES
 Room.prototype.setConstructionSites = function() {
