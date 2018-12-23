@@ -6,7 +6,7 @@ Room.prototype.runBuilder = function(creep) {
   var spawns =[];
   var storage = Game.getObjectById(this.memory.roomStorageID);
   for (var i in Game.flags) {
-    if (Game.flags[i].room.name == this.name) {
+    if (Game.flags[i].room == creep.room) {
       roomFlags.push(Game.flags[i]);
     }
   }
@@ -31,7 +31,7 @@ Room.prototype.runBuilder = function(creep) {
       }
     }
   }
-	
+
   var main_withdraw;
   if (storage != null && storage.store[RESOURCE_ENERGY] > 0) {
     main_withdraw = storage;
