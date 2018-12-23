@@ -3,8 +3,10 @@ Room.prototype.runAttacker = function(creep) {
   var typeArr = [];
   var enemyCreeps = [];
   var enemyTowers = [];
+	var enemySpawns = [];
+	var enemyExtensions = [];
   //console.log(creep.room.controller.owner.username);
-  enemyCreeps = null;
+  //enemyCreeps = null;
   for (var i in Game.flags) {
     if (Game.flags[i].name == "attackFlag") {
       attackFlag = Game.flags[i]
@@ -22,6 +24,13 @@ Room.prototype.runAttacker = function(creep) {
 			if (Game.getObjectById(this.memory.enemyStructureIDs[i]) != null && Game.getObjectById(this.memory.enemyStructureIDs[i]).structureType == STRUCTURE_TOWER) {
 				enemyTowers.push(Game.getObjectById(this.memory.enemyStructureIDs[i]));
 			}
+			if (Game.getObjectById(this.memory.enemyStructureIDs[i]) != null && Game.getObjectById(this.memory.enemyStructureIDs[i]).structureType == STRUCTURE_SPAWN) {
+				enemySpawns.push(Game.getObjectById(this.memory.enemyStructureIDs[i]));
+			}
+			if (Game.getObjectById(this.memory.enemyStructureIDs[i]) != null && Game.getObjectById(this.memory.enemyStructureIDs[i]).structureType == STRUCTURE_EXTENSION) {
+				enemyExtensions.push(Game.getObjectById(this.memory.enemyStructureIDs[i]));
+			}
+
 		}
   }
 
@@ -39,15 +48,25 @@ Room.prototype.runAttacker = function(creep) {
 		}
   }
 
-  if ((attackFlag != null || attackFlag != undefined) && this.memory.attackCondition == true) {
+  if ((attackFlag != null || attackFlag != undefined)) {
     if (creep.room.name == attackFlag.pos.roomName) {
 			if (enemyTowers[0] != undefined) {
 				var target = creep.pos.findClosestByRange(enemyTowers);
 				if (creep.attack(target) == ERR_NOT_IN_RANGE) {
 					creep.moveTo(target);
 				}
-			} else if (enemyCreeps != null) {
+			} else if (enemyCreeps[0] != undefined) {
 				var target = creep.pos.findClosestByRange(enemyCreeps);
+				if (creep.attack(target) == ERR_NOT_IN_RANGE) {
+					creep.moveTo(target);
+				}
+			} else if (enemySpawns[0] != undefined){
+				var target = creep.pos.findClosestByRange(enemySpawns);
+				if (creep.attack(target) == ERR_NOT_IN_RANGE) {
+					creep.moveTo(target);
+				}
+			} else if (enemyExtensions[0] != undefined) {
+				var target = creep.pos.findClosestByRange(enemyExtensions);
 				if (creep.attack(target) == ERR_NOT_IN_RANGE) {
 					creep.moveTo(target);
 				}
@@ -57,5 +76,7 @@ Room.prototype.runAttacker = function(creep) {
     } else {
 			creep.moveTo(attackFlag);
     }
-  }
+  } else {
+		creep.moveTo(Game.rooms[creep.memory.homeRoom].controller);
+	}
 }
