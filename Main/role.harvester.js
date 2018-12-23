@@ -49,12 +49,12 @@ Room.prototype.runHarvester = function(creep) {
   var main_withdraw = creep.pos.findClosestByRange(containers, {filter: (i) => {
 		return(i.store[RESOURCE_ENERGY] > 1/4*i.storeCapacity);
 	}});
-  if (main_withdraw == null && storage.store[RESOURCE_ENERGY] > 0) {
+  if ((main_withdraw == null && storage != null)&& storage.store[RESOURCE_ENERGY] > 0 && storage.room.name == creep.memory.homeRoom) {
     main_withdraw = storage;
   }
 
   var main_deposit;
-  if (storage != null && storage.store[RESOURCE_ENERGY] < storage.storeCapacity) {
+  if (storage != null && storage.store[RESOURCE_ENERGY] < storage.storeCapacity && storage.room.name == creep.memory.homeRoom) {
     main_deposit = storage;
   } else {
     main_deposit = creep.pos.findClosestByRange(containers, {
