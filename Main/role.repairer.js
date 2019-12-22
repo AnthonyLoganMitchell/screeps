@@ -54,8 +54,10 @@ Room.prototype.runRepairer = function(creep) {
     for (let i = 0; i < targetsTMP.length; i++) {
       if (Game.getObjectById(targetsTMP[i]).structureType == STRUCTURE_RAMPART && Game.getObjectById(targetsTMP[i]).hits < 1 / 100 * Game.getObjectById(targetsTMP[i]).hitsMax) {
         targetsReal.push(Game.getObjectById(targetsTMP[i]));
-      } else if (Game.getObjectById(targetsTMP[i]).structureType != STRUCTURE_RAMPART && Game.getObjectById(targetsTMP[i]).hits < Game.getObjectById(targetsTMP[i]).hitsMax) {
-        targetsReal.push(Game.getObjectById(targetsTMP[i]));
+      } else {
+          if (Game.getObjectById(targetsTMP[i]).hits < Game.getObjectById(targetsTMP[i]).hitsMax) {
+            targetsReal.push(Game.getObjectById(targetsTMP[i]));   
+          }
       }
     }
   }

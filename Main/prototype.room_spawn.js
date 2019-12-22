@@ -38,7 +38,11 @@ Room.prototype.getNextCreepToSpawn = function() {
       minMiners1 = 1;
       minMiners2 = 1;
       minHarvesters = 2;
-      minBuilders = 1;
+      if (this.memory.roomConstructSitesIDs.length >= 5) {
+        minBuilders = 2;
+      } else {
+        minBuilders = 1;   
+      }
       minUpgraders = 1;
       minRepairers = 1;
       minAttackers = 0;
@@ -47,7 +51,13 @@ Room.prototype.getNextCreepToSpawn = function() {
       minMiners1 = 1;
       minMiners2 = 1;
       minHarvesters = 2;
-      minBuilders = 1;
+      if (this.memory.roomConstructSitesIDs.length >= 15) {
+        minBuilders = 3;
+      } else if (this.memory.roomConstructSitesIDs.length >= 5) {
+        minBuilders = 2;   
+      } else {
+        minBuilders = 1;
+      }
       minUpgraders = 1;
       minRepairers = 1;
       minAttackers = 3;

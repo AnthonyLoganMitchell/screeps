@@ -30,8 +30,9 @@ Room.prototype.runTower = function(tower) {
     }
   }
 
-  var closestHostile = tower.pos.findClosestByRange(hostileCreeps);
-  if (closestHostile != null) {
+  var closestHostile = tower.room.find(FIND_HOSTILE_CREEPS);
+	//console.log(closestHostile);
+  if (closestHostile[0] != undefined) {
     tower.attack(tower.pos.findClosestByRange(closestHostile));
   } else {
     var closestDamagedStructure = tower.pos.findClosestByRange(repTarget);

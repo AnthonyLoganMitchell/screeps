@@ -15,7 +15,7 @@ Room.prototype.runRoom = function() {
   var towersInRoom = [];
   var spawnsInRoom = [];
   var type;
-  if (this.executeOnTicks(10)) {
+  if (this.executeOnTicks(30)) {
     console.log("Room_update: " + this.name)
     this.setRoomState();
     this.setRoomCreeps();
